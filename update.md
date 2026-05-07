@@ -79,3 +79,12 @@ NEN_AI_BASE_URL="http://192.168.0.245/v1"
 
 ### 待解決問題
 - **Veo 影片生成仍報 401 錯誤**：目前測試中，發往 `https://nen.com.tw/v1` 的影片生成請求返回 `401 Unauthorized: 无效的令牌`。該 API Key 可成功呼叫文字模型，但無法使用影片模型。推測是代理伺服器（NewAPI）權限或路由設定問題。
+
+---
+
+## 2026-05-08 — 新增 GitHub Actions CI
+
+### 修改檔案
+| 檔案 | 說明 |
+|------|------|
+| `.github/workflows/docker-build.yml` | 建立 CI 流程。當推送程式碼至 `main` 分支或建立 PR 時，會自動觸發 Docker Image 編譯測試，確保應用程式建置正常。 |
