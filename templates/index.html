@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gemini AI 測試平台</title>
+<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<!-- ── Login Overlay ──────────────────────────────────────── -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="logo-g">
+        <svg width="56" height="56" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="gemini-grad-login" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#4285F4"/>
+              <stop offset="100%" stop-color="#8B5CF6"/>
+            </linearGradient>
+          </defs>
+          <path d="M12 2C12.4 7.2 16.8 11.6 22 12C16.8 12.4 12.4 16.8 12 22C11.6 16.8 7.2 12.4 2 12C7.2 11.6 11.6 7.2 12 2Z" fill="url(#gemini-grad-login)"/>
+        </svg>
+      </div>
+      <h1>Gemini AI 測試平台</h1>
+      <p>輸入您的 newapi API Key 開始測試</p>
+    </div>
+    <div class="form-group">
+      <label>API Key</label>
+      <input type="password" id="apiKeyInput" placeholder="sk-…" autocomplete="off">
+      <div class="error-msg" id="loginError"></div>
+    </div>
+    <button class="btn-primary" id="loginBtn" data-label="登入" onclick="handleLogin()">登入</button>
+  </div>
+</div>
+
+<!-- ── App Layout ─────────────────────────────────────────── -->
+<div class="app-layout" id="appLayout" style="display:none">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div>
+        <div class="logo-text">
+          <svg width="16" height="16" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-right:6px">
+            <defs>
+              <linearGradient id="gemini-grad-sidebar" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#4285F4"/>
+                <stop offset="100%" stop-color="#8B5CF6"/>
+              </linearGradient>
+            </defs>
+            <path d="M12 2C12.4 7.2 16.8 11.6 22 12C16.8 12.4 12.4 16.8 12 22C11.6 16.8 7.2 12.4 2 12C7.2 11.6 11.6 7.2 12 2Z" fill="url(#gemini-grad-sidebar)"/>
+          </svg>Gemini AI</div>
+        <div class="logo-sub">Model Testing Platform</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item" data-tab="text" onclick="switchTab('text')">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+        </span><span>文字生成</span>
+      </div>
+      <div class="nav-item" data-tab="image" onclick="switchTab('image')">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+        </span><span>圖像生成</span>
+      </div>
+      <div class="nav-item" data-tab="video" onclick="switchTab('video')">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+        </span><span>影片生成</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="api-key-display" id="apiKeyDisplay"></div>
+      <button class="btn-logout" onclick="handleLogout()">登出</button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- ── TEXT TAB ──────────────────────────────────────── -->
+    <div class="tab-content" id="tab-text">
+      <div>
+        <div class="section-title">文字生成</div>
+        <div class="section-sub">使用 Gemini 系列模型進行文字對話與生成</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">模型與參數</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>模型</label>
+            <select id="textModel"></select>
+          </div>
+          <div class="form-group">
+            <label>Max Tokens</label>
+            <input type="number" id="maxTokensInput" value="4096" min="1" max="65536">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Temperature <span id="tempVal">0.7</span></label>
+            <div class="range-wrap">
+              <input type="range" id="tempRange" min="0" max="2" step="0.1" value="0.7" oninput="onTempChange(this.value)">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Top-P <span id="topPVal">0.90</span></label>
+            <div class="range-wrap">
+              <input type="range" id="topPRange" min="0" max="1" step="0.01" value="0.9" oninput="onTopPChange(this.value)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">輸入</div>
+        <div class="form-group">
+          <label>系統提示詞（可選）</label>
+          <textarea id="textSystem" rows="2" placeholder="設定 AI 角色或行為規則…"></textarea>
+        </div>
+        <div class="form-group">
+          <label>提示詞</label>
+          <textarea id="textPrompt" rows="4" placeholder="輸入您的問題或指令…"></textarea>
+        </div>
+        <button class="btn btn-send" id="textSendBtn" data-label="發送" onclick="sendText()">發送</button>
+      </div>
+
+      <div class="card">
+        <div class="response-header">
+          <span class="response-label">回應</span>
+          <button class="btn btn-copy" onclick="copyTextResponse()">複製</button>
+        </div>
+        <div class="response-box" id="textResponse">回應將顯示於此…</div>
+      </div>
+    </div>
+
+    <!-- ── IMAGE TAB ──────────────────────────────────────── -->
+    <div class="tab-content" id="tab-image">
+      <div>
+        <div class="section-title">圖像生成</div>
+        <div class="section-sub">使用 Gemini 系列模型生成或編輯圖像</div>
+      </div>
+
+      <!-- 模型與基本參數 -->
+      <div class="card">
+        <div class="card-title">模型與基本參數</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>模型</label>
+            <select id="imgModel" onchange="onImgModelChange()"></select>
+          </div>
+          <div class="form-group" id="imgThinkingGroup">
+            <label>Thinking Level</label>
+            <select id="imgThinkingLevel"></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>長寬比</label>
+            <select id="imgAspectRatio"></select>
+          </div>
+          <div class="form-group">
+            <label>解析度</label>
+            <select id="imgResolution"></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>生成數量</label>
+            <select id="imgSampleCount">
+              <option value="1">1 張</option>
+              <option value="2">2 張</option>
+              <option value="3">3 張</option>
+              <option value="4">4 張</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>圖像風格</label>
+            <select id="imgStyle">
+              <option value="">無 (預設)</option>
+              <option value="photograph">照片風格</option>
+              <option value="digital_art">數位藝術</option>
+              <option value="landscape">風景</option>
+              <option value="sketch">素描</option>
+              <option value="watercolor">水彩</option>
+              <option value="cyberpunk">賽博龐克</option>
+              <option value="pop_art">普普藝術</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Guidance Scale &nbsp;<span id="imgGuidanceVal" class="range-val">7</span></label>
+          <div class="range-wrap">
+            <span class="range-end">1</span>
+            <input type="range" id="imgGuidance" min="1" max="20" step="0.5" value="7"
+                   oninput="document.getElementById('imgGuidanceVal').textContent = this.value">
+            <span class="range-end">20</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 生成選項 -->
+      <div class="card">
+        <div class="card-title">生成選項</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>安全過濾等級</label>
+            <select id="imgSafety">
+              <option value="block_medium_and_above">中等以上封鎖</option>
+              <option value="block_low_and_above">低等以上封鎖（嚴格）</option>
+              <option value="block_only_high">僅高等封鎖（寬鬆）</option>
+              <option value="block_none">不封鎖</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>隨機種子 <span class="badge-optional">可選</span></label>
+            <input type="number" id="imgSeed" min="0" max="2147483647" placeholder="留空表示隨機">
+          </div>
+        </div>
+        <div class="options-row">
+          <label class="checkbox-label">
+            <input type="checkbox" id="imgEnhancePrompt">
+            <span>自動增強提示詞</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="imgAddWatermark" checked>
+            <span>加入 SynthID 浮水印</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="imgIncludeRai">
+            <span>顯示安全過濾原因</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="imgIncludeText">
+            <span>同時輸出文字說明</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 參考圖片 -->
+      <div class="card">
+        <div class="card-title">
+          參考圖片
+          <span class="badge-optional">可選 — 用於圖片編輯</span>
+        </div>
+        <div class="img-upload-zone" id="imgUploadZone"
+             onclick="document.getElementById('imgFileInput').click()"
+             ondragover="onImgDragOver(event)" ondragleave="onImgDragLeave()" ondrop="onImgDrop(event)">
+          <input type="file" id="imgFileInput" accept="image/png,image/jpeg,image/webp,image/gif"
+                 style="display:none" onchange="onImgFileChange(event)">
+          <div class="img-upload-placeholder" id="imgUploadPlaceholder">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+            <span>點擊或拖曳上傳圖片</span>
+            <span class="hint-text">支援 JPG、PNG、WebP、GIF</span>
+          </div>
+          <div class="img-upload-preview" id="imgUploadPreview">
+            <img id="imgPreviewImg" src="" alt="preview">
+            <button class="btn-remove-img" onclick="removeUploadedImage(event)" title="移除">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 提示詞 -->
+      <div class="card">
+        <div class="card-title">提示詞</div>
+        <div class="form-group">
+          <label>正向提示詞</label>
+          <textarea id="imgPrompt" rows="3" placeholder="描述您想要生成的圖像內容…"></textarea>
+        </div>
+        <div class="form-group">
+          <label>負向提示詞 <span class="badge-optional">可選</span></label>
+          <textarea id="imgNegPrompt" rows="2" placeholder="描述不想要出現的元素…"></textarea>
+        </div>
+        <button class="btn btn-send" id="imgSendBtn" data-label="生成圖像" onclick="sendImage()">生成圖像</button>
+      </div>
+
+      <!-- 生成結果 -->
+      <div class="card">
+        <div class="card-title">生成結果</div>
+        <div class="img-grid" id="imgGrid"></div>
+        <div class="img-text-result" id="imgTextResult"></div>
+      </div>
+    </div>
+
+    <!-- ── VIDEO TAB ──────────────────────────────────────── -->
+    <div class="tab-content" id="tab-video">
+      <div>
+        <div class="section-title">影片生成</div>
+        <div class="section-sub">使用 Veo 系列模型生成影片（非同步任務，需數分鐘）</div>
+      </div>
+
+      <!-- 模型與參數 -->
+      <div class="card">
+        <div class="card-title">模型與參數</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>模型</label>
+            <select id="vidModel" onchange="onVidModelChange()"></select>
+          </div>
+          <div class="form-group">
+            <label>解析度</label>
+            <select id="vidResolution">
+              <option value="720p">720p</option>
+              <option value="1080p">1080p</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>長寬比</label>
+            <select id="vidAspectRatio">
+              <option value="16:9">16:9 — 橫向</option>
+              <option value="9:16">9:16 — 直向</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>時長</label>
+            <select id="vidDuration" onchange="onVidDurChange(this.value)">
+              <option value="4">4 秒</option>
+              <option value="6">6 秒</option>
+              <option value="8">8 秒</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>FPS <span class="badge-optional">可選</span></label>
+            <input type="number" id="vidFps" min="8" max="60" placeholder="預設（留空）">
+          </div>
+          <div class="form-group">
+            <label>隨機種子 <span class="badge-optional">可選</span></label>
+            <input type="number" id="vidSeed" min="0" max="2147483647" placeholder="留空表示隨機">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>壓縮品質</label>
+            <select id="vidCompression">
+              <option value="optimized">Optimized（最佳化）</option>
+              <option value="lossless">Lossless（無損）</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>人物生成</label>
+            <select id="vidPersonGeneration">
+              <option value="allow_adult">允許成人</option>
+              <option value="allow_all">允許全部</option>
+              <option value="dont_allow">不允許</option>
+            </select>
+          </div>
+        </div>
+        <div class="options-row">
+          <label class="checkbox-label">
+            <input type="checkbox" id="vidGenerateAudio" checked>
+            <span>生成音訊</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="vidEnhancePrompt">
+            <span>自動增強提示詞</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 參考圖片 -->
+      <div class="card">
+        <div class="card-title">
+          參考圖片
+          <span class="badge-optional">可選 — 圖片轉影片</span>
+        </div>
+        <div class="img-upload-zone" id="vidUploadZone"
+             onclick="document.getElementById('vidFileInput').click()"
+             ondragover="onVidDragOver(event)" ondragleave="onVidDragLeave()" ondrop="onVidDrop(event)">
+          <input type="file" id="vidFileInput" accept="image/png,image/jpeg,image/webp"
+                 style="display:none" onchange="onVidFileChange(event)">
+          <div class="img-upload-placeholder" id="vidUploadPlaceholder">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+            <span>點擊或拖曳上傳參考圖片</span>
+            <span class="hint-text">支援 JPG、PNG、WebP</span>
+          </div>
+          <div class="img-upload-preview" id="vidUploadPreview">
+            <img id="vidPreviewImg" src="" alt="preview">
+            <button class="btn-remove-img" onclick="removeUploadedVideoImage(event)" title="移除">✕</button>
+          </div>
+        </div>
+        <div class="form-row" style="margin-top:12px">
+          <div class="form-group">
+            <label>參考類型</label>
+            <select id="vidRefType">
+              <option value="asset">主體參考 — 圖片轉影片</option>
+              <option value="style">風格參考 — 風格引導</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 提示詞 -->
+      <div class="card">
+        <div class="card-title">提示詞</div>
+        <div class="form-group">
+          <label>場景描述</label>
+          <textarea id="vidPrompt" rows="3" placeholder="描述您想要生成的影片場景，例如：A serene mountain lake at sunrise with mist rising from the water…"></textarea>
+        </div>
+        <div class="form-group">
+          <label>負向提示詞 <span class="badge-optional">可選</span></label>
+          <textarea id="vidNegPrompt" rows="2" placeholder="描述不想要出現的元素…"></textarea>
+        </div>
+        <button class="btn btn-send" id="vidSendBtn" data-label="提交生成任務" onclick="sendVideo()">提交生成任務</button>
+      </div>
+
+      <!-- 任務列表 -->
+      <div class="card">
+        <div class="card-title">任務列表</div>
+        <div class="task-list" id="videoTaskList">
+          <div style="color:var(--text-muted);font-size:13px">提交任務後，生成進度將顯示於此…</div>
+        </div>
+      </div>
+    </div>
+
+
+  </main>
+</div>
+
+<div id="toast-container"></div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <div class="lightbox-inner" onclick="event.stopPropagation()">
+    <img id="lightboxImg" src="" alt="Preview">
+    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  </div>
+</div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
