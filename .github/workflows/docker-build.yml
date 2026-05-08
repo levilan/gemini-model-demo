@@ -22,7 +22,7 @@ jobs:
       - name: Build Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./google_ai_model_webconsole
           push: false
           tags: gemini-model-tester:latest
           cache-from: type=gha

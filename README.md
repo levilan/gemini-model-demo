@@ -1,12 +1,14 @@
 # Gemini AI Model Testing Platform
 
-這是一個基於 FastAPI 與 Web 前端打造的 Google Gemini / Veo / AI 模型測試平台。本系統透過相容於 OpenAI 格式的 NewAPI 代理伺服器，讓您可以輕鬆地在網頁介面上測試文字、圖像、影片及音樂生成模型。
+這是一個基於 FastAPI 與 Web 前端打造的 Google Gemini / Veo / Lyria AI 模型測試平台。本系統透過相容於 OpenAI 格式的 NewAPI 代理伺服器，讓您可以輕鬆地在網頁介面上測試文字、圖像、影片及音樂生成模型。
 
 ## 🌟 功能特色
 
 - **文字生成**：支援 Gemini 3.1 Pro / Flash 等多種大型語言模型，並提供 Temperature 與 Top-P 等參數調整。
 - **圖像生成**：支援 Gemini Imagen 系列模型生成與編輯，支援參考圖片、浮水印開關與長寬比設定。
 - **影片生成**：支援 Veo 3.1 影片生成，包含文字轉影片與圖片轉影片（支援自動時長限制與輪詢狀態）。
+- **音樂生成**：支援 Lyria 音樂生成測試。
+- **Docker 化部署**：提供完整的 Docker 與 Docker Compose 支援，一鍵啟動測試環境。
 
 ## 📋 系統需求
 
@@ -20,11 +22,11 @@
 
 最簡單且推薦的執行方式是透過 Docker Compose。
 
-### 1. 取得程式碼
+### 1. 取得程式碼並進入 Web 專案目錄
 
 ```bash
 git clone https://github.com/levilan/gemini-model-demo.git
-cd gemini-model-demo
+cd gemini-model-demo/google_ai_model_webconsole
 ```
 
 ### 2. 環境變數設定
@@ -80,9 +82,10 @@ source .venv/bin/activate  # macOS/Linux
 # 或是 Windows: .venv\Scripts\activate
 ```
 
-### 2. 安裝依賴套件
+### 2. 進入專案目錄並安裝依賴套件
 
 ```bash
+cd google_ai_model_webconsole
 pip install -r requirements.txt
 ```
 
@@ -100,11 +103,13 @@ python app.py
 
 ## 📂 目錄結構說明
 
-- `app.py`：FastAPI 後端主程式，處理路由與轉發 API 請求。
-- `templates/index.html`：前端介面。
-- `static/`：包含前端使用的 CSS 樣式 (`style.css`) 與 JavaScript 邏輯 (`app.js`)。
-- `docker-compose.yml` & `Dockerfile`：容器化部署設定。
-- `test_*.py`：各類模型的單獨 CLI 測試腳本，可用於診斷 API 連線。
+- `google_ai_model_webconsole/`：Web 測試平台專案資料夾
+  - `app.py`：FastAPI 後端主程式，處理路由與轉發 API 請求。
+  - `templates/index.html`：前端介面。
+  - `static/`：包含前端使用的 CSS 樣式 (`style.css`) 與 JavaScript 邏輯 (`app.js`)。
+  - `docker-compose.yml` & `Dockerfile`：容器化部署設定。
+- 根目錄 (Root)：
+  - `test_*.py`：各類模型的單獨 Python 測試腳本，可用於診斷 API 連線。
 
 ## ⚠️ 注意事項
 
@@ -114,4 +119,4 @@ python app.py
 
 ## ⚙️ CI/CD
 
-本專案已配置 GitHub Actions。每當程式碼推送到 `main` 分支時，會自動觸發 Docker Image 編譯檢查，以確保程式碼可以正常建置。
+本專案已配置 GitHub Actions。每當程式碼推送到 `main` 分支時，會自動觸發 Docker Image 編譯檢查，以確保 Web 應用程式可以正常建置。
