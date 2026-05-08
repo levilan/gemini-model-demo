@@ -1,0 +1,17 @@
+services:
+  gemini-model-tester:
+    build: .
+    ports:
+      - "5002:5002"
+    volumes:
+      - ./outputs:/app/outputs
+      - ./.env:/app/.env
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PORT=5002
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5002/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
