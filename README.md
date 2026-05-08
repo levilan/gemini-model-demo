@@ -1,14 +1,12 @@
 # Gemini AI Model Testing Platform
 
-這是一個基於 FastAPI 與 Web 前端打造的 Google Gemini / Veo / Lyria AI 模型測試平台。本系統透過相容於 OpenAI 格式的 NewAPI 代理伺服器，讓您可以輕鬆地在網頁介面上測試文字、圖像、影片及音樂生成模型。
+這是一個基於 FastAPI 與 Web 前端打造的 Google Gemini / Veo / AI 模型測試平台。本系統透過相容於 OpenAI 格式的 NewAPI 代理伺服器，讓您可以輕鬆地在網頁介面上測試文字、圖像、影片及音樂生成模型。
 
 ## 🌟 功能特色
 
 - **文字生成**：支援 Gemini 3.1 Pro / Flash 等多種大型語言模型，並提供 Temperature 與 Top-P 等參數調整。
 - **圖像生成**：支援 Gemini Imagen 系列模型生成與編輯，支援參考圖片、浮水印開關與長寬比設定。
 - **影片生成**：支援 Veo 3.1 影片生成，包含文字轉影片與圖片轉影片（支援自動時長限制與輪詢狀態）。
-- **音樂生成**：支援 Lyria 音樂生成測試。
-- **Docker 化部署**：提供完整的 Docker 與 Docker Compose 支援，一鍵啟動測試環境。
 
 ## 📋 系統需求
 
